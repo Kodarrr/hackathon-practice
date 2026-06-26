@@ -3,6 +3,17 @@ from pydantic import BaseModel, Field
 from typing import List, Literal
 import re
 
+
+from fastapi import  UploadFile, File, Form, HTTPException
+from groq_service import GroqService
+from parser import extract_text_from_pdf
+from schemas import AnalysisResult
+import json
+
+app = FastAPI(title="hackathon-practice")
+
+groq_service = GroqService()
+
 from groq_service import GroqService
 from parser import extract_text_from_pdf
 from schemas import AnalysisResult
@@ -36,6 +47,9 @@ class ATSResponse(BaseModel):
     confidence: float
 
 
+@app.post("/echo", response_model=EchoResponse)
+def echo(payload: EchoRequest):
+    return EchoResponse(message=payload.message)
 # ---------------------------
 # Helpers (simple deterministic parsing)
 # ---------------------------
@@ -253,6 +267,7 @@ async def analyze_resume(
             "confidence": analysis.get("confidence", 0.0)
         }
 
+        return final_result
         return AnalysisResult(**final_result)
 
     except Exception as e:
